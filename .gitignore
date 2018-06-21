@@ -1,0 +1,12 @@
+
+*.whl
+*.gz
+daikinPyZone.egg-info/top_level.txt
+daikinPyZone.egg-info/PKG-INFO
+daikinPyZone.egg-info/dependency_links.txt
+daikinPyZone.egg-info/SOURCES.txt
+build/lib/daikinPyZone/daikinProcess.py
+build/lib/daikinPyZone/daikinConstants.py
+build/lib/daikinPyZone/daikinClasses.py
+build/lib/daikinPyZone/daikinCalculate.py
+build/lib/daikinPyZone/__init__.py
