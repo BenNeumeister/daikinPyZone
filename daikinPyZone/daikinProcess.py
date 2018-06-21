@@ -5,10 +5,10 @@ import http.client
 import time
 import logging
 
-from daikinConstants import *
-from daikinCalculate import *
+from daikinPyZone.daikinConstants import *
+from daikinPyZone.daikinCalculate import *
 
-from daikinClasses import ( DaikinClimateInformation, DaikinClimateSettings, DetermineFanInformation,
+from daikinPyZone.daikinClasses import ( DaikinClimateInformation, DaikinClimateSettings, DetermineFanInformation,
     InternalAcMode, AcStateMode, SensorSelect, SensorIndex, AcPowerState, ConvertModeFlagToAcState,
     FanSpeed, FanSpeed, FanMode,  SyncZoneState, GetZoneBitMaskFromZoneState, ZoneState)
 

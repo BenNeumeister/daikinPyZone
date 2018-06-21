@@ -1,7 +1,7 @@
 import base64
 
-from daikinConstants import *
-from daikinClasses import( ResolveFanSpeedForDataFrame, ResolveSensorNameToIndex, GetZoneBitMaskFromZoneState)
+from daikinPyZone.daikinConstants import *
+from daikinPyZone.daikinClasses import( ResolveFanSpeedForDataFrame, ResolveSensorNameToIndex, GetZoneBitMaskFromZoneState)
 
 #CalculateDaikinChecksum
 # Function calculates the checksum for the frame

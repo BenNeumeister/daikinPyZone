@@ -2,7 +2,7 @@
 import requests
 import socket
 import logging
-from daikinProcess import *
+from daikinPyZone.daikinProcess import *
 
 _LOGGER = logging.getLogger(__name__)
 
