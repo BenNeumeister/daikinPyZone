@@ -13,7 +13,7 @@ class DaikinSkyZone(object):
     BROADCAST_PORT = 30050
     SOCKET_BUFSIZE = 1024
 
-    def __init__(self, name = 'Daikin Skyzone', ipAddress = '0.0.0.0', debugLvl = 0, pollExtSns = 0):
+    def __init__(self, password = None, name = 'Daikin Skyzone', ipAddress = '0.0.0.0', debugLvl = 0, pollExtSns = 0):
         #create info structs for Info and Settings classes.
         self._DaikinClimateInfo_Object = DaikinClimateInformation()
         self._DaikinClimateSettings_Object = DaikinClimateSettings()
@@ -23,6 +23,9 @@ class DaikinSkyZone(object):
         
         #Set  default IPAdd.
         self._IpAdd = ipAddress
+        
+        #Set password
+        self._Pwd = password
                 
         #Set debug mode
         self._DebugModeLevel = debugLvl

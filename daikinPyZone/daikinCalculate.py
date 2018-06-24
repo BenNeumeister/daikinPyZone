@@ -3,9 +3,20 @@ import base64
 from daikinPyZone.daikinConstants import *
 from daikinPyZone.daikinClasses import( ResolveFanSpeedForDataFrame, ResolveSensorNameToIndex, GetZoneBitMaskFromZoneState)
 
+#CalcPasswordHiByte          
+#Function calculates the high byte based on the local PIN/Password          
+def CalcPasswordHiByte(password):
+    return ( (int(int(password)/1000) << 4) + int((int(password)% 1000) / 100) )
+
+
+#CalcPasswordLowByte
+#Function calculates the Low byte based on the local PIN/Password          
+def CalcPasswordLowByte(password):
+    return ( (int((int(password)%100)/10)<< 4) + (int(password)% 10)  )
+
+
 #CalculateDaikinChecksum
 # Function calculates the checksum for the frame
-
 def CalculateDaikinChecksum ( Headerbytes, Databtyes):
 
     # Add all values in Header/Data bytes. Checksum= total /256& 0xFF and total & 0xFF
@@ -87,6 +98,10 @@ def CreateSensorSetDataFrame(self):
 def CreateRequestFrame (self,  RequestType, PCD):
     Header = C_DaikinHeader
     Header[3] = RequestType
+    #Only populate password if set. Otherwise default (0xFF, 0xFF) is ok.
+    if(self._Pwd != 0000):
+        Header[5] = CalcPasswordHiByte(self._Pwd)
+        Header[6] = CalcPasswordLowByte(self._Pwd)
         
     #0xA0 - Get all info from unit
     if(PCD == C_PCD_BasicInfo):

@@ -21,6 +21,7 @@ I'll also link a quick GUI for the API to control the AC from any system which c
 ## Supported Units
 
 Support Skyzone controllers: BRC230TZ4, BRC230TZ8, BRC24TZ4 and BRC24TZ8
+
 Support Daikin Models: Any FDYQ & FDYQN unit fitted with a Skyzone controller (Single or 3 phase).
 
 In theory, this API should support **ANY** Daikin Skyzone unit.
@@ -89,8 +90,10 @@ If you plan on using the API, hit up the source. Hopefully comments in there are
 ### Advanced Usage
 For the init for the API, there are a few parameters that can be set in order to get abit more from the API.
 
-    DaikinSkyZone(name, ipAddress, debugLevel, pollExterbalSensorFlag)
+    DaikinSkyZone(password, name, ipAddress, debugLevel, pollExterbalSensorFlag)
 
+**password** - Set the 4 digit Adapter password set in the Daikin Tablet.
+    
 **name** - Gives the name used for display purposes for Home Assistant.
 
 **ipAddress** - Bypass discovery and give an the API an IP Address to attempt communication to. 
@@ -102,10 +105,4 @@ For the init for the API, there are a few parameters that can be set in order to
 	3 - See raw frame data received.*
     
 **pollExternalSensorsFlag** - Enable logic to use ExternalTempSensorUpdate()
-
-### Interesting Notes during development
-
- 1. The 4 digit pin set in the Daikin Skyzone Tablet has no impact to the data sent around on the network. It's only used for the handshake between the Tablet and the Skyzone controller. You can simply ignore it and request data using the Skyzone API and everything works. Had they used the PIN to encrypt the string... well then it would have been interesting to break.
- 2. The above means that most likely data send via the Internet to control the unit remotely via the Daikin Servers is also unlikely to be **un-encrypted**. I'll investigate this next.
- 3. Checksum data is calculated on all frames sent to and from the Skyzone controller the nodes, however it's never checked at either end.
 

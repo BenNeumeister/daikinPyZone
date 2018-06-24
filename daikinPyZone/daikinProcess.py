@@ -713,7 +713,7 @@ def SendReceiveFrame(self, FrameIndex):
                 ProcessReceivedPacket(self,data)
             
         except OSError as error:
-            _LOGGER.error("Could not send TCP Request: %s", +error.winerror )
+            _LOGGER.error("Could not send TCP Request: %s", +error )
             TCPsocket.close()
 
 
@@ -735,10 +735,14 @@ def DecodeFrame(self, incomingString):
     #get frame=xxx values
     decodedMsg = base64.b64decode(incomingString)
     
-    if len(decodedMsg) == 17 :
+    if(decodedMsg[4]!=0):
+        #Pw not corret
+        _LOGGER.error('Password is not correct. Please check and re-enter!')
+        self._IpAdd = '0.0.0.0'
+        return
+    elif len(decodedMsg) == 17 :
         #set request response level message
         IncomingInfo = decodedMsg
-        
     else:
         #get request response level message
         #read byte 14 to get response info
