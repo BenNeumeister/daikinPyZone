@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="daikinPyZone",
-    version="0.3",
+    version="0.4",
     author="Ben Neumeister",
     author_email="benneumeister@gmail.com",
     description="Daikin Skyzone API for Python",
