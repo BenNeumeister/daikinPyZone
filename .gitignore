@@ -10,3 +10,4 @@ build/lib/daikinPyZone/daikinConstants.py
 build/lib/daikinPyZone/daikinClasses.py
 build/lib/daikinPyZone/daikinCalculate.py
 build/lib/daikinPyZone/__init__.py
+compile_pypa.txt

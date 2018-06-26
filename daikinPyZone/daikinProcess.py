@@ -15,7 +15,7 @@ from daikinPyZone.daikinClasses import ( DaikinClimateInformation, DaikinClimate
 _LOGGER = logging.getLogger(__name__)
 
 #ProcessBasicInfo
-# Function processes the 'BasicInfo' from received from the SkyZone unit.
+#Function processes the 'BasicInfo' from received from the SkyZone unit.
 #C_PCD_BasicInfo =0xA0  
 def ProcessBasicInfo(self, incomingInfo):
   
@@ -77,7 +77,7 @@ def ProcessBasicInfo(self, incomingInfo):
         _LOGGER.debug('ErrorCode: %s | HistoryErrorCode: %s',self._DaikinClimateInfo_Object.ErrorCodes,self._DaikinClimateInfo_Object.HistoryErrorCodes)
 
 #ProcessInitialInfo
-# Function processes the 'InitialInfo' from received from the SkyZone unit. 
+#Function processes the 'InitialInfo' from received from the SkyZone unit. 
 #C_PCD_InitialInfo = 0xA1                # Get unit type and limits
 def ProcessInitialInfo(self, incomingInfo):
 
@@ -101,8 +101,8 @@ def ProcessInitialInfo(self, incomingInfo):
 
         
 #ProcessControlInfo
-# Function processes the 'ControlInfo' from received from the SkyZone unit.
-# This should only be a 'positive response' from SkyZone.
+#Function processes the 'ControlInfo' from received from the SkyZone unit.
+#This should only be a 'positive response' from SkyZone.
 #C_PCD_ControlInfo = 0xB0
 def ProcessControlInfo(self, incomingInfo):
     pass
@@ -111,8 +111,8 @@ def ProcessControlInfo(self, incomingInfo):
         _LOGGER.debug('0xB0 (ControlInfo Accepted)')
 
 #ProcessControlInfo
-# Function processes the 'InternalAcMode' request from received from the SkyZone unit.
-# This should only be a 'positive response' from SkyZone.        
+#Function processes the 'InternalAcMode' request from received from the SkyZone unit.
+#This should only be a 'positive response' from SkyZone.        
 #C_PCD_InternalAcMode = 0xB2        # Control Normal/Service mode
 def ProcessInternalAcMode(self, incomingInfo):
     pass
@@ -122,8 +122,8 @@ def ProcessInternalAcMode(self, incomingInfo):
 
 
 #ProcessSelectSensor
-# Function processes the 'SelectSensor' request from received from the SkyZone unit.
-# This should only be a 'positive response' from SkyZone.
+#Function processes the 'SelectSensor' request from received from the SkyZone unit.
+#This should only be a 'positive response' from SkyZone.
 #C_PCD_SelectSensor = 0xB3            # Set selected temp sensor
 def ProcessSelectSensor(self, incomingInfo):
     pass
@@ -132,8 +132,8 @@ def ProcessSelectSensor(self, incomingInfo):
         _LOGGER.debug('0xB3 (SelectSensor Accepted)')
 
 
- #ProcessGetLocalSetting
-# Function processes the 'GetLocalSetting' request from received from the SkyZone unit.
+#ProcessGetLocalSetting
+#Function processes the 'GetLocalSetting' request from received from the SkyZone unit.
 #C_PCD_GetLocalSetting = 0xC0        # Get 'service' info
 def ProcessGetLocalSetting(self, incomingInfo):
 
@@ -159,8 +159,8 @@ def ProcessGetLocalSetting(self, incomingInfo):
 
                 
 #ProcessSetLocalSetting
-# Function processes the 'SetLocalSetting' request from received from the SkyZone unit.
-# This should only be a 'positive response' from SkyZone.
+#Function processes the 'SetLocalSetting' request from received from the SkyZone unit.
+#This should only be a 'positive response' from SkyZone.
 #C_PCD_SetLocalSetting = 0xC3        # Set 'service' settings         
 def ProcessSetLocalSetting(self, incomingInfo):
     pass
@@ -168,9 +168,8 @@ def ProcessSetLocalSetting(self, incomingInfo):
     if(self._DebugModeLevel >= 1):
         _LOGGER.debug('0xC3 (SetLocalSetting Accepted)')
 
-        
 #ProcessGetZoneNames
-# Function processes the 'GetZoneNames' request from received from the SkyZone unit.
+#Function processes the 'GetZoneNames' request from received from the SkyZone unit.
 #C_PCD_GetZoneNames = 0xD0        # Get zone names
 def ProcessGetZoneNames(self, incomingInfo):
 
@@ -194,7 +193,7 @@ def ProcessGetZoneNames(self, incomingInfo):
         _LOGGER.debug('Zone Names: %s | %s | %s| %s| %s| %s| %s| %s', self._DaikinClimateInfo_Object.ZoneName[0],self._DaikinClimateInfo_Object.ZoneName[1], self._DaikinClimateInfo_Object.ZoneName[2],self._DaikinClimateInfo_Object.ZoneName[3],self._DaikinClimateInfo_Object.ZoneName[4],self._DaikinClimateInfo_Object.ZoneName[5], self._DaikinClimateInfo_Object.ZoneName[6], self._DaikinClimateInfo_Object.ZoneName[7])
 
 #ProcessGetSensorNames
-# Function processes the 'GetSensorNames' request from received from the SkyZone unit.
+#Function processes the 'GetSensorNames' request from received from the SkyZone unit.
 #C_PCD_GetSensorNames = 0xD2    # Get sensor names        
 def ProcessGetSensorNames(self, incomingInfo):
     #Convert byteArray to string of characters
@@ -219,8 +218,8 @@ def ProcessGetSensorNames(self, incomingInfo):
         _LOGGER.debug('Sensor Names: %s | %s | %s | %s' ,self._DaikinClimateInfo_Object.TempSensorName[0], self._DaikinClimateInfo_Object.TempSensorName[1], self._DaikinClimateInfo_Object.TempSensorName[2], self._DaikinClimateInfo_Object.TempSensorName[3], self._DaikinClimateInfo_Object.TempSensorName[4])
         
 #C_DaikinIncomingResonse
-# Defines the function pointer (function dictionary) making processing incoming frames really easy.
-# Commented out items are not supported
+#Defines the function pointer (function dictionary) making processing incoming frames really easy.
+#Commented out items are not supported
 C_DaikinIncomingResonse = { 0xA0 : ProcessBasicInfo,
                             0xA1 : ProcessInitialInfo,
                             0xB0 : ProcessControlInfo,
@@ -268,7 +267,6 @@ def IsUnitDataPresent(self):
 def RetrievePowerState(self):
     return self._DaikinClimateSettings_Object.PowerOnState
 
-
 #UpdatePowerState
 #Function is used to alter the current PowerOn state of PiZone - class AcPowerState
 #Note: Once updated, SyncControInfo frame needs to be sent to SkyZone, otherwise value will be lost next poll to SkyZone (BasicInfo).
@@ -279,7 +277,6 @@ def UpdatePowerState(self, AcPowerState):
         
     self._DaikinClimateSettings_Object.PowerOnState = AcPowerState
 
-
 #GetClimateMode
 #Function is used to return the current Climate mode of PiZone - class AcStateMode
 def GetClimateMode(self):
@@ -287,7 +284,6 @@ def GetClimateMode(self):
         return AcStateMode.MODE_OFF
     else:
         return self._DaikinClimateSettings_Object.AcStateModeValue
-
 
 #SetClimateMode
 #Function is used to alter the current Climate mode state of PiZone - class AcStateMode
@@ -308,7 +304,6 @@ def SetClimateMode(self, SetAcMode):
         UpdatePowerState(self, AcPowerState.ON)
         self._DaikinClimateSettings_Object.AcStateModeValue = SetAcMode
 
-
 #GetTargetClimateTemp
 #Function is used to return the current Target temperature for the current climate mode.
 def GetTargetClimateTemp(self):
@@ -322,7 +317,6 @@ def GetTargetClimateTemp(self):
      #cool
      else:
         return self._DaikinClimateSettings_Object.CoolSetTemp
-
 
 #SetTargetClimateTemp
 #Function is used to alter the current Target temperature for the current mode  of PiZone 
@@ -356,18 +350,17 @@ def SetTargetClimateTemp(self, SetTemp):
         #Temp setting ignored.
         pass
 
-
 #GetClimateTempSensor
 #Function is used to return the current Climate temp sensor of PiZone - class SensorIndex
 def GetClimateTempSensor(self):
     return self._DaikinClimateSettings_Object.SelectedSensor
-    
+
 #GetClimateSensorName
 #Function is used to get sensor name as given by Daikin Skyzone
 def GetClimateSensorName(self, SelectedSensor):
     if isinstance(SelectedSensor, SensorIndex):
         return self._DaikinClimateInfo_Object.TempSensorName[SelectedSensor]
- 
+
  #GetClimateSensorState
  #Function is used to indicate if a given SensorIndex is currently set as the SelectedSensor
 def GetClimateSensorState(self, SelectedSensor):
@@ -377,7 +370,7 @@ def GetClimateSensorState(self, SelectedSensor):
             return True
         else:
             return False
-        
+
 #GetClimateSensorValue
 #Function is used to get the temperature of a given SensorIndex.
 def GetClimateSensorValue(self, SelectedSensor):
@@ -393,6 +386,7 @@ def GetClimateSensorValue(self, SelectedSensor):
                 return SensorValue
             else:
                 return None
+
 #GetClimateExternalSensorCount
 #Fucntion returns the number of configured external sensors on the Daikin Unit
 def GetClimateExternalSensorCount(self):
@@ -411,7 +405,7 @@ def GetClimateCurrentTempValue(self):
     else:
         #Sensor2
         return self._DaikinClimateSettings_Object.TempSensorValues.Sensor2
-        
+
 #SetClimateTempSensor
 #Function is used to alter the current climate temp sensor of PiZone 
 #Note: Once updated, SetAcTempReadSensor frame needs to be sent to SkyZone, otherwise value will be lost next poll to SkyZone (BasicInfo)
@@ -424,7 +418,6 @@ def SetClimateTempSensor(self, SetSensorIndex):
         #limit value to Sensor2, as Outdoor/Refrigerant are not part of frame and only used for internal indexing of temperatures.
         if(SetSensorIndex <= SensorIndex.Sensor2):
             self._DaikinClimateSettings_Object.SelectedSensor = SetSensorIndex  
-
 
 #GetClimateFanSpeed
 #Function is used to return the current fan speed for the current mode of PiZone - class FanSpeed
@@ -443,7 +436,6 @@ def GetClimateFanSpeed(self):
     #cool/fan/auto
     else:
         return self._DaikinClimateSettings_Object.CoolFanState.FanSpeed
-
 
 #SetSelectedFanSpeed
 #Function is used to alter the current fan speed  for the current mode of PiZone 
@@ -491,7 +483,6 @@ def SetSelectedFanSpeed(self, SetFanSpeed):
             #Speed/Fan settings ignored.
             pass
 
-            
 #GetClimateZoneState
 #Function returns True if the zoneIndex is currently Active
 def GetClimateZoneState(self, zoneIndex):
@@ -500,12 +491,12 @@ def GetClimateZoneState(self, zoneIndex):
 #Function is used to return the number of configured zones on the Daikin Unit
 def GetClimateNumberOfZones(self):
     return self._DaikinClimateInfo_Object.NumberOfZones
-    
+
 #GetClimateZoneName
 #Function is used to get the name of the zone as given from the Daikin Unit
 def GetClimateZoneName (self, zoneIndex):
     return self._DaikinClimateInfo_Object.ZoneName[zoneIndex]
-    
+
  #UpdateZoneState
 # Function updates the zone 
 def UpdateZoneState(self, zoneIndex, zoneSetting):
@@ -526,7 +517,7 @@ def UpdateZoneState(self, zoneIndex, zoneSetting):
        
     if(anyZoneActive == False):
         _LOGGER.error('No Zone selected. This may cause permanent damage to your AC system!')
- 
+
 #SetClimateZoneActive/SetClimateZoneInactive
 #Functions are used to set a zone (zoneIndex) to Active/Inactive
 def SetClimateZoneActive(self, zoneIndex): UpdateZoneState(self, zoneIndex, ZoneState.ACTIVE)
@@ -540,7 +531,7 @@ def GetClimateHistoryErrorCodes(self):  return self._DaikinClimateInfo_Object.Hi
 def GetClimateClearFilterFlag(self):    return self._DaikinClimateInfo_Object.ClearFilter
 def GetClimiateMinSupportedTemp(self):  return min(self._DaikinClimateInfo_Object.MinCoolTemp, self._DaikinClimateInfo_Object.MinHeatTemp) 
 def GetClimiateMaxSupportedTemp(self):  return max(self._DaikinClimateInfo_Object.MaxCoolTemp, self._DaikinClimateInfo_Object.MaxHeatTemp)
- 
+
 #UpdateTempSensorDataProcess
 #Function to cycle though the internal and refrigerant temp sensors..
 def UpdateTempSensorDataProcess(self):
@@ -580,7 +571,7 @@ def UpdateTempSensorDataProcess(self):
     #Exit service mode
     self._DaikinClimateSettings_Object.InternalAcMode = InternalAcMode.NORMAL
     SendReceiveFrame(self, "SetInternalAcMode")
-    
+
 #UpdateTempSensorDataProcess
 #Function to cycle though the external temp sensors.
 #Function should not be used if either sensor can have wildly different values.
@@ -646,7 +637,7 @@ def UpdateExternalTempSensorDataProcess(self):
             
     #release lock
     self._SyncClimateInfoLockout = 0
-            
+
 #Interfaces used to generate frames to get/set SkyZone unit via network interface 
 def CreateIntialInfoFrame(self):
    return CreateRequestFrame(self, C_REQUEST_GETUP,C_PCD_InitialInfo)
@@ -684,7 +675,6 @@ C_DaikinRequest = { 'InitialInfo' : CreateIntialInfoFrame,
                            'GetSensorZoneNames' : CreateGetSensorZoneNamesFrame
 }
 
-
 #SendReceiveFrame
 #Function to send frame onto Network and wait for response from SkyZone.
 def SendReceiveFrame(self, FrameIndex):
@@ -716,7 +706,6 @@ def SendReceiveFrame(self, FrameIndex):
             _LOGGER.error("Could not send TCP Request: %s", +error )
             TCPsocket.close()
 
-
 #ProcessReceivedPacket        
 #Function to process incoming response from SkyZone.
 def ProcessReceivedPacket(self, incomingPacket):
@@ -725,7 +714,6 @@ def ProcessReceivedPacket(self, incomingPacket):
     else: 
         if(self._DebugModeLevel >= 1):
             _LOGGER.debug('Error: %s', incomingPacket[0:13])
-
 
 #DecodeFrame
 # Function decodes incoming string from SkyZone and calls required sub-service to process information returned.            
@@ -759,7 +747,6 @@ def DecodeFrame(self, incomingString):
     ProcessingIncomingGetResponse(self, IncomingInfo)
 
     return IncomingInfo
-
 
 #ProcessingIncomingGetResponse
 #Determines which AC frame has been transmitted and calls according function to process information. Unused/invalid frames are ignored.

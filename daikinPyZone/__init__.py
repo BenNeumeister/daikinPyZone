@@ -48,7 +48,7 @@ class DaikinSkyZone(object):
             # Broadcast and wait for response from SkyZone controller target port 30050
             UDPsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
             UDPsocket.settimeout(10.0)  #wait 10sec for timeout
-            UDPsocket.bind(('0.0.0.0', 36999))  #resp. will come in port 36999
+            UDPsocket.bind(('0.0.0.0', 36999))  #resp. will come on port 36999
             UDPsocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) #set socket to broadcast mode
             
             try:
@@ -86,7 +86,7 @@ class DaikinSkyZone(object):
             SendReceiveFrame(self, "GetZoneNames")
             SendReceiveFrame(self, "GetSensorZoneNames")
             if(self._PollExternalSensors == 0):
-                #poll internal/coolant if not polling externals
+                #poll internal/refrigerant if polling externals enabled
                 UpdateTempSensorDataProcess(self)
         #check for valid serial
         return (IsUnitDataPresent(self) == 1)
@@ -137,7 +137,7 @@ class DaikinSkyZone(object):
         return GetClimateSensorState(self, (SensorIndex)(SensorValue))
         
     #Function gets the temperture of the SensorIndex.
-    #If the value is '0' it will return 'None'. 
+    #If the value is '255' it will return 'None'. 
     #If pollExtSns is 0, it will return 'None' for any external sensor which is not the selected sensor.
     def GetSensorValue(self, SensorValue):
         return GetClimateSensorValue(self, (SensorIndex)(SensorValue))
