@@ -702,8 +702,8 @@ def SendReceiveFrame(self, FrameIndex):
                 TCPsocket.close()
                 ProcessReceivedPacket(self,data)
             
-        except OSError as error:
-            _LOGGER.error("Could not send TCP Request: %s", +error )
+        except OSError as e:
+            _LOGGER.error("Could not send TCP Request: %s", e )
             TCPsocket.close()
 
 #ProcessReceivedPacket        
