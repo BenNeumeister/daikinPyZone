@@ -61,6 +61,9 @@ def CreateDataRequestDataFrame(PCD):
 #CreateAcStateDataFrame
 #  Function creates a set AcState Data array from the template and inserts current settings from PiZone instance for tranmissions
 def CreateAcStateDataFrame(self):
+    #reset UnitSettingsUpdated flag
+    self._DaikinClimateSettings_Object.UnitSettingsUpdated = False
+    
     Data = C_DaikinDataAcState
 
     Data[7] = self._DaikinClimateSettings_Object.AcStateModeValue + (self._DaikinClimateSettings_Object.PowerOnState << 3)
@@ -89,6 +92,9 @@ def CreateLocalSettingDataFrame(self):
 #CreateSensorSetDataFrame
 # Function creates a set Sensor Data array from the template and inserts the Sensor PiZone wants to switch to
 def CreateSensorSetDataFrame(self):
+    #reset UnitSettingsUpdated flag
+    self._DaikinClimateSettings_Object.UnitSettingsUpdated = False
+    
     Data = C_DaikinDataSensorSelect
     Data[7] = ResolveSensorNameToIndex(self, self._DaikinClimateInfo_Object.TempSensorName[self._DaikinClimateSettings_Object.SelectedSensor])
     return Data
@@ -96,6 +102,9 @@ def CreateSensorSetDataFrame(self):
 #CreateRequestFrame
 #  Function creates the request frame based on given parameters
 def CreateRequestFrame (self,  RequestType, PCD):
+    #reset UnitSettingsUpdated flag
+    self._DaikinClimateSettings_Object.UnitSettingsUpdated = False
+
     Header = C_DaikinHeader
     Header[3] = RequestType
     #Only populate password if set. Otherwise default (0xFF, 0xFF) is ok.

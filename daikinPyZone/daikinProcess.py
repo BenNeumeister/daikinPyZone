@@ -33,36 +33,43 @@ def ProcessBasicInfo(self, incomingInfo):
     #AirFlowRatio = incomingInfo[5]
     #CommonZone = (incomingInfo[8]  >> 7)
     
-    self._DaikinClimateSettings_Object.PowerOnState = (AcPowerState)(incomingInfo[1]  >> 7)  
-    self._DaikinClimateSettings_Object.SelectedSensor = (SensorIndex)(incomingInfo[11] >> 4)
-    self._DaikinClimateSettings_Object.CoolSetTemp = incomingInfo[18]
-    self._DaikinClimateSettings_Object.HeatSetTemp = incomingInfo[20]
+    #if UnitSettingsUpdated flag is set, ignore current response.
     
-    self._DaikinClimateSettings_Object.TempSensorValues[self._DaikinClimateSettings_Object.SelectedSensor] = (incomingInfo[14] & 0x7F) 
-    self._DaikinClimateSettings_Object.TempSensorValues[SensorIndex.Outdoor] = (incomingInfo[16] & 0x7F) 
+    if(self._DaikinClimateSettings_Object.UnitSettingsUpdated):
+        pass
+        if(self._DebugModeLevel >= 1):
+            _LOGGER.debug('Skipping update message due to changed local variables')
+    else:
+        self._DaikinClimateSettings_Object.PowerOnState = (AcPowerState)(incomingInfo[1]  >> 7)  
+        self._DaikinClimateSettings_Object.SelectedSensor = (SensorIndex)(incomingInfo[11] >> 4)
+        self._DaikinClimateSettings_Object.CoolSetTemp = incomingInfo[18]
+        self._DaikinClimateSettings_Object.HeatSetTemp = incomingInfo[20]
+        
+        self._DaikinClimateSettings_Object.TempSensorValues[self._DaikinClimateSettings_Object.SelectedSensor] = (incomingInfo[14] & 0x7F) 
+        self._DaikinClimateSettings_Object.TempSensorValues[SensorIndex.Outdoor] = (incomingInfo[16] & 0x7F) 
 
-    self._DaikinClimateSettings_Object.AcStateModeValue = ConvertModeFlagToAcState(incomingInfo[1] & 0x7)
-    self._DaikinClimateSettings_Object.InternalAcMode = (InternalAcMode)(incomingInfo[2] & 0x7)
-    
-    l_CoolFanMode = (incomingInfo[3] >> 4 & 0x3)
-    l_CoolFanSpeed = (incomingInfo[3] & 0xF)
-    l_HeatFanMode = (incomingInfo[4] >> 4 & 0x3)
-    l_HeatFanSpeed = (incomingInfo[4] & 0xF)
-    l_CoolFanState = DetermineFanInformation(l_CoolFanMode,l_CoolFanSpeed)
-    l_HeatFanState = DetermineFanInformation(l_HeatFanMode,l_HeatFanSpeed)
-    
-    self._DaikinClimateSettings_Object.CoolFanState.FanMode = l_CoolFanState.FanMode
-    self._DaikinClimateSettings_Object.CoolFanState.FanSpeed = l_CoolFanState.FanSpeed
-    self._DaikinClimateSettings_Object.HeatFanState.FanMode =  l_HeatFanState.FanMode
-    self._DaikinClimateSettings_Object.HeatFanState.FanSpeed = l_HeatFanState.FanSpeed
-    
-    self._DaikinClimateInfo_Object.NumberOfZones = (incomingInfo[8] & 0xF)
-    self._DaikinClimateInfo_Object.NumberOfSensors = (incomingInfo[10] & 0xF)
-    self._DaikinClimateInfo_Object.ErrorCodes = (incomingInfo[12])
-    self._DaikinClimateInfo_Object.HistoryErrorCodes = (incomingInfo[13])
-    self._DaikinClimateInfo_Object.ClearFilter = (incomingInfo[0]  & 1)    
-    
-    SyncZoneState(self, incomingInfo[9])
+        self._DaikinClimateSettings_Object.AcStateModeValue = ConvertModeFlagToAcState(incomingInfo[1] & 0x7)
+        self._DaikinClimateSettings_Object.InternalAcMode = (InternalAcMode)(incomingInfo[2] & 0x7)
+        
+        l_CoolFanMode = (incomingInfo[3] >> 4 & 0x3)
+        l_CoolFanSpeed = (incomingInfo[3] & 0xF)
+        l_HeatFanMode = (incomingInfo[4] >> 4 & 0x3)
+        l_HeatFanSpeed = (incomingInfo[4] & 0xF)
+        l_CoolFanState = DetermineFanInformation(l_CoolFanMode,l_CoolFanSpeed)
+        l_HeatFanState = DetermineFanInformation(l_HeatFanMode,l_HeatFanSpeed)
+        
+        self._DaikinClimateSettings_Object.CoolFanState.FanMode = l_CoolFanState.FanMode
+        self._DaikinClimateSettings_Object.CoolFanState.FanSpeed = l_CoolFanState.FanSpeed
+        self._DaikinClimateSettings_Object.HeatFanState.FanMode =  l_HeatFanState.FanMode
+        self._DaikinClimateSettings_Object.HeatFanState.FanSpeed = l_HeatFanState.FanSpeed
+        
+        self._DaikinClimateInfo_Object.NumberOfZones = (incomingInfo[8] & 0xF)
+        self._DaikinClimateInfo_Object.NumberOfSensors = (incomingInfo[10] & 0xF)
+        self._DaikinClimateInfo_Object.ErrorCodes = (incomingInfo[12])
+        self._DaikinClimateInfo_Object.HistoryErrorCodes = (incomingInfo[13])
+        self._DaikinClimateInfo_Object.ClearFilter = (incomingInfo[0]  & 1)    
+        
+        SyncZoneState(self, incomingInfo[9])
    
     if(self._DebugModeLevel >= 1):
         _LOGGER.debug('-------------------------------------------------------------------------------')
@@ -271,9 +278,8 @@ def RetrievePowerState(self):
 #Function is used to alter the current PowerOn state of PiZone - class AcPowerState
 #Note: Once updated, SyncControInfo frame needs to be sent to SkyZone, otherwise value will be lost next poll to SkyZone (BasicInfo).
 def UpdatePowerState(self, AcPowerState):
-    #whilst lockout is present delay for 5s and check again
-    while(self._SyncLockout == 1):
-        time.sleep(1)
+    #set flag that update has occured and to ignore current update if in progress
+    self._DaikinClimateSettings_Object.UnitSettingsUpdated = True
         
     self._DaikinClimateSettings_Object.PowerOnState = AcPowerState
 
@@ -289,9 +295,8 @@ def GetClimateMode(self):
 #Function is used to alter the current Climate mode state of PiZone - class AcStateMode
 #Note: Once updated, SyncControInfo frame needs to be sent to SkyZone, otherwise value will be lost next poll to SkyZone (BasicInfo).
 def SetClimateMode(self, SetAcMode):
-    #whilst lockout is present delay for 5s and check again
-    while(self._SyncLockout == 1):
-        time.sleep(1)
+    #set flag that update has occured and to ignore current update if in progress
+    self._DaikinClimateSettings_Object.UnitSettingsUpdated = True
     
     if(SetAcMode == AcStateMode.MODE_OFF):
         #Turn off unit
@@ -322,9 +327,8 @@ def GetTargetClimateTemp(self):
 #Function is used to alter the current Target temperature for the current mode  of PiZone 
 #Note: Once updated, SyncControInfo frame needs to be sent to SkyZone, otherwise value will be lost next poll to SkyZone (BasicInfo).
 def SetTargetClimateTemp(self, SetTemp):
-    #whilst lockout is present delay for 5s and check again
-    while(self._SyncLockout == 1):
-        time.sleep(1)
+    #set flag that update has occured and to ignore current update if in progress
+    self._DaikinClimateSettings_Object.UnitSettingsUpdated = True
     
     #HEAT
     if(GetClimateMode(self)  == AcStateMode.MODE_HEAT):
@@ -411,9 +415,8 @@ def GetClimateCurrentTempValue(self):
 #Note: Once updated, SetAcTempReadSensor frame needs to be sent to SkyZone, otherwise value will be lost next poll to SkyZone (BasicInfo)
 def SetClimateTempSensor(self, SetSensorIndex):
     if isinstance(SetSensorIndex, SensorIndex):  
-        #whilst lockout is present delay for 5s and check again
-        while((self._SyncLockout == 1) or (self._SyncClimateInfoLockout == 1)):
-            time.sleep(1)
+        #set flag that update has occured and to ignore current update if in progress
+        self._DaikinClimateSettings_Object.UnitSettingsUpdated = True
         
         #limit value to Sensor2, as Outdoor/Refrigerant are not part of frame and only used for internal indexing of temperatures.
         if(SetSensorIndex <= SensorIndex.Sensor2):
@@ -441,9 +444,8 @@ def GetClimateFanSpeed(self):
 #Function is used to alter the current fan speed  for the current mode of PiZone 
 #Note: Once updated, SyncControInfo frame needs to be sent to SkyZone, otherwise value will be lost next poll to SkyZone (BasicInfo).
 def SetSelectedFanSpeed(self, SetFanSpeed):
-    #whilst lockout is present delay for 5s and check again
-    while(self._SyncLockout == 1):
-        time.sleep(1)
+    #set flag that update has occured and to ignore current update if in progress
+    self._DaikinClimateSettings_Object.UnitSettingsUpdated = True
     
     #check FanSpeed is valid
     if (isinstance(SetFanSpeed, FanSpeed) and (SetFanSpeed != FanSpeed.NA)):
@@ -500,10 +502,9 @@ def GetClimateZoneName (self, zoneIndex):
  #UpdateZoneState
 # Function updates the zone 
 def UpdateZoneState(self, zoneIndex, zoneSetting):
-    #whilst lockout is present delay for 5s and check again
-    while(self._SyncLockout == 1):
-        time.sleep(1)
-        
+    #set flag that update has occured and to ignore current update if in progress
+    self._DaikinClimateSettings_Object.UnitSettingsUpdated = True
+    
     #check each bit and set corresponding zone. Check for 'max' zones supported
     if (isinstance(zoneSetting, ZoneState)):
         if(zoneIndex < self._DaikinClimateInfo_Object.NumberOfZones):
@@ -536,9 +537,9 @@ def GetClimiateMaxSupportedTemp(self):  return max(self._DaikinClimateInfo_Objec
 #Function to cycle though the internal and refrigerant temp sensors..
 def UpdateTempSensorDataProcess(self):
     #update using 'service' mode (prevent changing AC unit 'guide' temp)
-    #whilst lockout is present delay for 1s and check again
+    #whilst lockout is present delay for 0.5s and check again
     while(self._SyncLockout == 1):
-        time.sleep(1)
+        time.sleep(0.5)
    
     #Enter service mode (b2)
     self._DaikinClimateSettings_Object.InternalAcMode = InternalAcMode.SERVICE

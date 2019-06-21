@@ -260,9 +260,12 @@ class DaikinClimateInformation(object):
 
 class DaikinClimateSettings(object):
 
-    __slots__ = ['PowerOnState','Zone','SelectedSensor','ServiceModeSensor','CoolSetTemp','HeatSetTemp','TempSensorValues','AcStateModeValue','InternalAcMode','CoolFanState','HeatFanState']
+    __slots__ = ['UnitSettingsUpdated','PowerOnState','Zone','SelectedSensor','ServiceModeSensor','CoolSetTemp','HeatSetTemp','TempSensorValues','AcStateModeValue','InternalAcMode','CoolFanState','HeatFanState']
 
     def __init__(self, powerOnState = AcPowerState.OFF, acMode = 0, internalAcMode = 0, selectedSensor = 1, serviceModeSensor = 1, coolSetTemp = 21, heatSetTemp = 21, powerState = 0):
+        #UpdateFlag
+        self.UnitSettingsUpdated = False
+        
         #PowerState
         self.PowerOnState = powerOnState
         

@@ -42,47 +42,50 @@ class DaikinSkyZone(object):
         
     #Discover function for SkyZone   
     def discover_skyzoneController(self):
-        #only attemp if ipADD is not set;
-        if (self._IpAdd == '0.0.0.0'):
-            # Attempt to find SkyZone controller
-            # Broadcast and wait for response from SkyZone controller target port 30050
-            UDPsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
-            UDPsocket.settimeout(10.0)  #wait 10sec for timeout
-            UDPsocket.bind(('0.0.0.0', 36999))  #resp. will come on port 36999
-            UDPsocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) #set socket to broadcast mode
-            
-            try:
-                UDPsocket.sendto(bytes("DAIKIN_UDP/common/basic_info", "utf-8"), (self.BROADCAST_ADDRESS, self.BROADCAST_PORT))
-                            
-                while True:
-                    #wait for response
-                    data, addr = UDPsocket.recvfrom(self.SOCKET_BUFSIZE)
-                    
-                    #check for SkyZone response (just incase something else reports on the same broadcast/port)
-                    if ((data.decode("utf-8"))[0:23] == 'ret=OK,type=Duct Aircon'):              
-                   
-                       self._IpAdd = addr[0]
-                       _LOGGER.info('Daikin SkyZone found at IP: %s', addr)
-                       break
+        while(self._SyncLockout == 1):
+            time.sleep(0.25)
+        curr_ipAddress = self._IpAdd
+        
+        # Attempt to find SkyZone controller
+        # Broadcast and wait for response from SkyZone controller target port 30050
+        UDPsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+        UDPsocket.settimeout(10.0)  #wait 10sec for timeout
+        UDPsocket.bind(('0.0.0.0', 36999))  #resp. will come on port 36999
+        UDPsocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) #set socket to broadcast mode
+        
+        try:
+            UDPsocket.sendto(bytes("DAIKIN_UDP/common/basic_info", "utf-8"), (self.BROADCAST_ADDRESS, self.BROADCAST_PORT))
+                        
+            while True:
+                #wait for response
+                data, addr = UDPsocket.recvfrom(self.SOCKET_BUFSIZE)
+                
+                #check for SkyZone response (just incase something else reports on the same broadcast/port)
+                if ((data.decode("utf-8"))[0:23] == 'ret=OK,type=Duct Aircon'):              
+               
+                   self._IpAdd = addr[0]
+                   _LOGGER.info('Daikin SkyZone found at IP: %s', addr)
+                   break
 
-            except socket.timeout:
-                _LOGGER.error('Daikin SkyZone: UDP timeout (10 seconds)')
-                UDPsocket.close()
-                return False
-                    
-            except OSError as error:
-                _LOGGER.error('Could not broadcast UDP : %s', error )
-                UDPsocket.close()
-                return False
-            
+        except socket.timeout:
+            _LOGGER.error('Daikin SkyZone: UDP timeout (10 seconds)')
             UDPsocket.close()
+            return False
+                
+        except OSError as error:
+            _LOGGER.error('Could not broadcast UDP : %s', error )
+            UDPsocket.close()
+            return False
+        
+        UDPsocket.close()
     
         #else, attemp connection;
                         
-        #IP for SkyZone now received. Begin getting initial data from unit to populate locate data instances
-        if(self._IpAdd != '0.0.0.0'):
-            SendReceiveFrame(self, "InitialInfo")
-            SendReceiveFrame(self, "BasicInfo")
+        #IP for SkyZone now received. Begin getting initial data from unit to populate local data instances
+        SendReceiveFrame(self, "InitialInfo")
+        SendReceiveFrame(self, "BasicInfo")
+        #only get 'Zones/Sesnors on 'new' connection
+        if(self._IpAdd != curr_ipAddress):
             SendReceiveFrame(self, "GetZoneNames")
             SendReceiveFrame(self, "GetSensorZoneNames")
             if(self._PollExternalSensors == 0):
@@ -90,7 +93,6 @@ class DaikinSkyZone(object):
                 UpdateTempSensorDataProcess(self)
         #check for valid serial
         return (IsUnitDataPresent(self) == 1)
-
 
     #-------------------------------------------#
     # Get/Set Functions Definitions #
@@ -215,7 +217,7 @@ class DaikinSkyZone(object):
     def SyncUpdate(self): 
         #Check for lockout incase sync is called during update cycle.
         while(self._SyncLockout == 1):
-            time.sleep(1)
+            time.sleep(0.25)
             
         self._SyncLockout = 1
         self.SyncClimateInfo()
