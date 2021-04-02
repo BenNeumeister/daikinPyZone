@@ -1,11 +1,11 @@
 # PyZone API
-This project enabled you to control any Daikin Skyzone reverse cycle ducted split air-conditioning unit without being restricted by the somewhat limited functionality provided by Daikin via their APP.
+This project enables you to control any Daikin Skyzone reverse cycle ducted split unit without being restricted by the somewhat limited functionality provided by Daikin via their APP.
 I've attempted to provide as much flexibility as possible for interfacing to the API.
-The API works by creating a virtual Daikin structure with all the current settings of the AC unit. Changes are made via API calls to the structure variables, and are then transmitted to the Daikin Unit via a encoded string. A call is then made back to the Daikin Unit to confirm the updated settings.
+The API works by creating a virtual Daikin structure with all the current settings of the AC unit. Changes are made via API calls to the structure variables which are then transmitted to the Daikin Unit via a encoded string. A call is then made back to the Daikin Unit to confirm the updated settings.
 
-I've created a Home Assistant Component which uses this API and integrates it nicely into that. Please check it out if you want to use the API on its own to see what it can do.
+I've created a Home Assistant Component which uses this API and integrates it nicely into that. Please check it out if you want to use the API on it's own to see what it can do.
 
-I'll also link a quick GUI for the API to control the AC from any system which can run a python shell (i.e. Windows, MacOS, etc.).
+If required I can link a quick GUI for the API to control the AC from any system which can run a python shell (i.e. Windows, MacOS, etc.).
 
 ## Supported Features
 
