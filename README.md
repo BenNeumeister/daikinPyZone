@@ -33,11 +33,11 @@ Create an instance of the API using;
 
 Tell the API to discover Skyzone;
 
-    daikinSkyZoneAPI.discover_skyzoneController()
+    daikinSkyZoneAPI.discover_skyzone_controller()
 
 To determine if the API found anything, you can simply check;
 
-    if(daikinSkyZone.IsUnitConnected()):
+    if(daikinSkyZone.is_unit_connected()):
 	    return True #Found Daikin Skyzone
 	else:
 		return False #Troubles
@@ -52,43 +52,43 @@ If you plan on using the API, hit up the source. Hopefully comments in there are
 
 |API Function | Parameters/Return and Purpose
 |-------|--------|
-|discover_skyzoneController()|Tells the API to search for any Skyzone unit on the current network
-|BasicUpdate()| Gets the current selected sensor temp, outdoor temp, AC Mode, Fan Mode and zone settings.
-|TempSensorUpdate() | Uses a hidden service mode to get the Internal temperature (if not selected current sensor) and the refrigerant sensor. The refrigerant value is handy to work out if the unit is currently active, doing a coolant cycle, de-ice, etc.
-|ExternalTempSensorUpdate() | **CAUTION: Use with care!** This function will cycle through all external sensors to attempt to provide an up-to date temperature. The function works, however even though the sensor is selected for a brief time (~8s), the Daikin AC unit will 'keep' the value for ~3mins before releasing it. This means if you have warm and cool zone, the unit will constantly start/stop whenever the logic is run. **It's not recommended to be used unless you 'alter' the target temperature to keep the unit functional across all zones.**
-|SyncClimateSettingsData()| Used to transmit a change of data back to the Daikin Unit. Used for: Mode, Fan Speed, Target Temperature and Zone.
-|SyncClimateSensor()| Used to transmit a change of selected sensor back to the Daikin Unit.
-|IsUnitConnected()| Indicates if valid data was received from the Daikin Unit to initialisation.
-|GetIndoorUnitPartNumber() | Returns the indoor unit part number
-|GetOutdoorUnitPartNumber() | Returns the outdoor unit part number
-|GetCurrentMode() | Returns the current mode of the Daikin Unit in text. Setup for Home Assistant Climate integration.
-|SetCurrentMode() | Set the current mode of the Daikin Unit. *Parameter: **class AcStateMode***
-|GetTargetTemp()| Get the target temperature for the current selected mode. NOTE: Heating/Cooling modes each have their own.
-|SetTargetTemp()| Set the target temperature for the current mode. *Parameter*: ***interger***
-|GetCurrentTempValue()| Get the current temperature for the selected sensor (Internal or External 1 or 2).
-|GetSelectedTempSensor() | Get the sensor which is currently set as the selected sensor. *Return Type: **class SensorIndex***
-|SetSelectedTempSensor() | Set the sensor which is to be set as the selected sensor. (Sensor used for reference temperature for climate control). *Parameter: **integer 0-2 (index of class SensorIndex)***
-|GetNumberExternalSensors()| Gets the number of external sensors configured to the Daikin Unit. Max of 2 supported.
-|GetSensorName() | Gets the name of the Sensor as setup in the Daikin Skyzone Tablet. **Parameter:* **integer 0-2 (index of class SensorIndex)***
-|GetSensorState() | Returns True if the given index corresponds to the sensor set as the selected sensor. Otherwise returns false. Implemented for Home Assistant. **Parameter* **integer 0-2 (index of class SensorIndex)***
-|GetSensorValue()| Returns the temperature of the sensor for the given index. *Parameter: **integer 0-4 (index of class SensorIndex)***
-|GetNumberOfZones() | Returns the number of Zones as setup in the Daikin Skyzone Tablet. 
-|GetZoneName()| Returns the Zone Name as setup in the Daikin Skyzone Tablet. *Parameter: **integer zone Index (0-> Number of zones - 1)***
-|GetZonesState() | Gets if the given Zone (zone Index ) is currently active. *Parameter: **integer zone Index (0-> Number of zones - 1)***
-|SetZoneActive() | Set the given Zone as active. *Parameter: **integer zone Index (0-> Number of zones - 1)***
-|SetZoneInactive() | Set the given Zone as inactive. *Parameter: **integer zone Index (0-> Number of zones - 1)***
-|GetFanSpeed() | Gets the current fan speed of the Daikin Unit in text. Setup for Home Assistant Climate integration.
-|SetFanSpeed() | Sets the fan speed of the Daikin Unit. *Parameter: **class FanSpeed*** 
-|GetMinSupportTemp()| Gets the minimum temperature supported by the Daikin Unit for cooling.
-|GetMaxSupportTemp()| Gets the maximm temperature supported by the Daikin Unit for heating.
-|GetErrorCodes()| Get the current error codes being reported by the Daikin Unit.
-|GetHistoryErrorCodes()| Get the history error codes being reported by the Daikin Unit
-|GetClearFilterFlag()| Get the status of clear filter flag from the Daikin Unit.
+|discover_skyzone_controller()|Tells the API to search for any Skyzone unit on the current network
+|update()| Gets the current selected sensor temp, outdoor temp, AC Mode, Fan Mode and zone settings.
+|update_temperate_sensor() | Uses a hidden service mode to get the Internal temperature (if not selected current sensor) and the refrigerant sensor. The refrigerant value is handy to work out if the unit is currently active, doing a coolant cycle, de-ice, etc.
+|update_additional_temperature_sensors() | This function has two stage. The first stage will update the internal and refrigerant sensors whene called. The second stage will cycle through all external sensors to attempt to provide an up-to date temperature. This only occurs when pollExterbalSensorFlag is enabled. The function works, however even though the sensor is selected for a brief time (~8s), the Daikin AC unit will 'keep' the value for ~3mins before releasing it. This means if you have warm and cool zone, the unit will constantly start/stop whenever the logic is run. **It's not recommended to be used unless you 'alter' the target temperature to keep the unit functional across all zones.**
+|sync_climate_request()| Used to transmit a change of data back to the Daikin Unit. Used for: Mode, Fan Speed, Target Temperature and Zone.
+|update_temperate_sensor()| Used to transmit a change of selected sensor back to the Daikin Unit.
+|is_unit_connected()| Indicates if valid data was received from the Daikin Unit to initialisation.
+|get_indoor_unit_part_number() | Returns the indoor unit part number
+|get_outdoor_unit_part_number() | Returns the outdoor unit part number
+|get_current_mode() | Returns the current mode of the Daikin Unit in text. Setup for Home Assistant Climate integration.
+|set_current_mode() | Set the current mode of the Daikin Unit. *Parameter: **class AcStateMode***
+|get_target_temp()| Get the target temperature for the current selected mode. NOTE: Heating/Cooling modes each have their own.
+|set_target_temp()| Set the target temperature for the current mode. *Parameter*: ***interger***
+|get_current_temp()| Get the current temperature for the selected sensor (Internal or External 1 or 2).
+|get_selected_temp_sensor() | Get the sensor which is currently set as the selected sensor. *Return Type: **class SensorIndex***
+|set_selected_temp_sensor() | Set the sensor which is to be set as the selected sensor. (Sensor used for reference temperature for climate control). *Parameter: **integer 0-2 (index of class SensorIndex)***
+|get_number_of_external_sensors()| Gets the number of external sensors configured to the Daikin Unit. Max of 2 supported.
+|get_sensor_state() | Gets the name of the Sensor as setup in the Daikin Skyzone Tablet. **Parameter:* **integer 0-2 (index of class SensorIndex)***
+|get_sensor_state() | Returns True if the given index corresponds to the sensor set as the selected sensor. Otherwise returns false. Implemented for Home Assistant. **Parameter* **integer 0-2 (index of class SensorIndex)***
+|get_sensor_temperature()| Returns the temperature of the sensor for the given index. *Parameter: **integer 0-4 (index of class SensorIndex)***
+|get_number_of_zones() | Returns the number of Zones as setup in the Daikin Skyzone Tablet. 
+|get_zone_name()| Returns the Zone Name as setup in the Daikin Skyzone Tablet. *Parameter: **integer zone Index (0-> Number of zones - 1)***
+|get_zone_state() | Gets if the given Zone (zone Index ) is currently active. *Parameter: **integer zone Index (0-> Number of zones - 1)***
+|set_zone_active() | Set the given Zone as active. *Parameter: **integer zone Index (0-> Number of zones - 1)***
+|set_zone_inactive() | Set the given Zone as inactive. *Parameter: **integer zone Index (0-> Number of zones - 1)***
+|get_fan_speed() | Gets the current fan speed of the Daikin Unit in text. Setup for Home Assistant Climate integration.
+|set_fan_speed() | Sets the fan speed of the Daikin Unit. *Parameter: **class FanSpeed*** 
+|get_min_supported_temp()| Gets the minimum temperature supported by the Daikin Unit for cooling.
+|get_max_supported_temp()| Gets the maximm temperature supported by the Daikin Unit for heating.
+|get_error_codes()| Get the current error codes being reported by the Daikin Unit.
+|get_history_error_codes()| Get the history error codes being reported by the Daikin Unit
+|get_clear_filter_flag()| Get the status of clear filter flag from the Daikin Unit.
 
 
 
 ### Advanced Usage
-For the init for the API, there are a few parameters that can be set in order to get abit more from the API.
+For the init for the API, there are a few parameters that can be set in order to get abit more from the interface.
 
     DaikinSkyZone(password, name, ipAddress, debugLevel, pollExterbalSensorFlag)
 
@@ -104,5 +104,5 @@ For the init for the API, there are a few parameters that can be set in order to
 	2 - More Info. Strings for names
 	3 - See raw frame data received.*
     
-**pollExternalSensorsFlag** - Enable logic to use ExternalTempSensorUpdate()
+**pollExternalSensorsFlag** - Enable logic to poll ALL connected sensors. VERY EXPERIMENTAL
 

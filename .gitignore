@@ -11,3 +11,5 @@ build/lib/daikinPyZone/daikinClasses.py
 build/lib/daikinPyZone/daikinCalculate.py
 build/lib/daikinPyZone/__init__.py
 compile_pypa.txt
+daikinPyZone/__pycache__/__init__.cpython-39.pyc
+*.pyc

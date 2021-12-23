@@ -1,151 +1,181 @@
 import base64
 
 from daikinPyZone.daikinConstants import *
-from daikinPyZone.daikinClasses import( ResolveFanSpeedForDataFrame, ResolveSensorNameToIndex, GetZoneBitMaskFromZoneState)
-
-#CalcPasswordHiByte          
-#Function calculates the high byte based on the local PIN/Password          
-def CalcPasswordHiByte(password):
-    return ( (int(int(password)/1000) << 4) + int((int(password)% 1000) / 100) )
-
-
-#CalcPasswordLowByte
-#Function calculates the Low byte based on the local PIN/Password          
-def CalcPasswordLowByte(password):
-    return ( (int((int(password)%100)/10)<< 4) + (int(password)% 10)  )
+from daikinPyZone.daikinClasses import (
+    resolve_fan_speed_for_data_frame,
+    resolve_sensor_name_to_index,
+    get_zone_bit_mask_from_zone_state,
+    UpdateRequest)
 
 
-#CalculateDaikinChecksum
+# calc_password_hi_byte
+# Function calculates the high byte based on the local PIN/Password
+def calc_password_hi_byte(password):
+    return (int(int(password) / 1000) << 4) + int((int(password) % 1000) / 100)
+
+
+# calc_password_low_byte
+# Function calculates the Low byte based on the local PIN/Password
+def calc_password_low_byte(password):
+    return (int((int(password) % 100) / 10) << 4) + (int(password) % 10)
+
+
+# calculate_daikin_checksum
 # Function calculates the checksum for the frame
-def CalculateDaikinChecksum ( Headerbytes, Databtyes):
-
+def calculate_daikin_checksum(header_bytes, data_bytes):
     # Add all values in Header/Data bytes. Checksum= total /256& 0xFF and total & 0xFF
-    #Note: Android app doesn't appear to do checksum verification. Assuming SkyZone controller does.
-    dataA = bytes(Headerbytes)
-    dataB = bytes(Databtyes)
-    byteSum = 0;
-    
-    for d in dataA : byteSum += d;
-    for e in dataB : byteSum += e;
-    
-    Checksum = C_DaikinChecksum
-    Checksum[0] = int((byteSum)/256) & 0xFF
-    Checksum[1] = (byteSum) & 0xFF
-    
-    return Checksum
-    
-#AssembleTransmissionFrame
+    # Note: Android app doesn't appear to do checksum verification. Assuming SkyZone controller does.
+    data_a = bytes(header_bytes)
+    data_b = bytes(data_bytes)
+    byte_sum = 0
+
+    for d in data_a:
+        byte_sum += d
+    for e in data_b:
+        byte_sum += e
+
+    checksum = C_DaikinChecksum
+    checksum[0] = int(byte_sum / 256) & 0xFF
+    checksum[1] = byte_sum & 0xFF
+
+    return checksum
+
+
+# assemble_transmission_frame
 # Function assembles the frame for transmission, merging together the header, data and checksum bytes
-def AssembleTransmissionFrame ( HeaderBytes, DataBtyes, ChecksumBytes):
+def assemble_transmission_frame(header_bytes, data_bytes, checksum_bytes):
+    # Ensure all items are in byte format
+    data_a = bytearray(header_bytes)
+    data_b = bytearray(data_bytes)
+    data_c = bytearray(checksum_bytes)
 
-    #Ensure all items are in byte format
-    dataA = bytearray(HeaderBytes)
-    dataB = bytearray(DataBtyes)
-    dataC = bytearray(ChecksumBytes)
+    assembled_array = data_a
+    for a in data_b:
+        assembled_array.append(a)
+    for b in data_c:
+        assembled_array.append(b)
 
-    AssembledArray = dataA
-    for a in dataB : AssembledArray.append(a)
-    for b in dataC : AssembledArray.append(b)
-    
-    #encode into base64
-    encoded = base64.b64encode(AssembledArray)
+    # Encode into base64
+    encoded = base64.b64encode(assembled_array)
     return encoded
-    
- #  CreateDataRequestDataFrame
- # Function creates a DataRequest array from the template and inserts PCD type.
-def CreateDataRequestDataFrame(PCD):
-    Data = C_DaikinDataRequest
-    Data[5] = PCD
-    return Data
 
-#CreateAcStateDataFrame
-#  Function creates a set AcState Data array from the template and inserts current settings from PiZone instance for tranmissions
-def CreateAcStateDataFrame(self):
-    #reset UnitSettingsUpdated flag
-    self._DaikinClimateSettings_Object.UnitSettingsUpdated = False
-    
-    Data = C_DaikinDataAcState
 
-    Data[7] = self._DaikinClimateSettings_Object.AcStateModeValue + (self._DaikinClimateSettings_Object.PowerOnState << 3)
-    Data[8] = self._DaikinClimateSettings_Object.CoolSetTemp
-    Data[10]  = self._DaikinClimateSettings_Object.HeatSetTemp 
-    Data[12] = ( (self._DaikinClimateSettings_Object.CoolFanState.FanMode.value) << 4)  + (ResolveFanSpeedForDataFrame(self._DaikinClimateSettings_Object.CoolFanState.FanSpeed) & 0x0F)
-    Data[13] = ( (self._DaikinClimateSettings_Object.HeatFanState.FanMode) << 4)  + (ResolveFanSpeedForDataFrame(self._DaikinClimateSettings_Object.HeatFanState.FanSpeed) & 0x0F)
-    Data[14] = GetZoneBitMaskFromZoneState(self)
-    
-    return Data
+# create_data_request_frame
+# Function creates a DataRequest array from the template and inserts PCD type.
+def create_data_request_frame(pcd):
+    data = C_DaikinDataRequest
+    data[5] = pcd
+    return data
 
-#CreateInternalAcModeDataFrame
-#  Function creates a set AcMode Data array from the template and inserts the mode PiZone wants to switch to
-def CreateInternalAcModeDataFrame(self):
-    Data = C_DaikinDataInternalMode
-    Data[7] = self._DaikinClimateSettings_Object.InternalAcMode.value
-    return Data
 
-#CreateLocalSettingDataFrame
-#  Function creates a set LocalSettings Data array from the template and inserts the Sensor PiZone wants to switch to
-def CreateLocalSettingDataFrame(self):
-    Data = C_DaikinDataControlInfoTemp
-    Data[8] = self._DaikinClimateSettings_Object.ServiceModeSensor .value
-    return Data
+# create_ac_state_data_frame
+# Function creates a set AcState Data array from the template
+#   and inserts current settings from PiZone instance for transmissions
+def create_ac_state_data_frame(self):
+    # reset UpdateRequestMask flags
+    self._DaikinClimateSettings_Object.UpdateRequestMask = \
+        UpdateRequest.reset_flag(self._DaikinClimateSettings_Object.UpdateRequestMask, UpdateRequest.AC_STATE)
+    self._DaikinClimateSettings_Object.UpdateRequestMask = \
+        UpdateRequest.reset_flag(self._DaikinClimateSettings_Object.UpdateRequestMask, UpdateRequest.POWER_STATE)
+    self._DaikinClimateSettings_Object.UpdateRequestMask = \
+        UpdateRequest.reset_flag(self._DaikinClimateSettings_Object.UpdateRequestMask, UpdateRequest.TARGET_TEMP)
+    self._DaikinClimateSettings_Object.UpdateRequestMask = \
+        UpdateRequest.reset_flag(self._DaikinClimateSettings_Object.UpdateRequestMask, UpdateRequest.FAN_STATE)
+    self._DaikinClimateSettings_Object.UpdateRequestMask = \
+        UpdateRequest.reset_flag(self._DaikinClimateSettings_Object.UpdateRequestMask, UpdateRequest.ZONE)
 
-#CreateSensorSetDataFrame
+    data = C_DaikinDataAcState
+
+    data[7] = self._DaikinClimateSettings_Object.AcStateModeValue +\
+        (self._DaikinClimateSettings_Object.PowerOnState << 3)
+    data[8] = self._DaikinClimateSettings_Object.CoolSetTemp
+    data[10] = self._DaikinClimateSettings_Object.HeatSetTemp
+    data[12] = (self._DaikinClimateSettings_Object.CoolFanState.FanMode.value << 4) + \
+               (resolve_fan_speed_for_data_frame(self._DaikinClimateSettings_Object.CoolFanState.FanSpeed) & 0x0F)
+    data[13] = (self._DaikinClimateSettings_Object.HeatFanState.FanMode << 4) + \
+               (resolve_fan_speed_for_data_frame(self._DaikinClimateSettings_Object.HeatFanState.FanSpeed) & 0x0F)
+    data[14] = get_zone_bit_mask_from_zone_state(self)
+
+    return data
+
+
+# create_internal_ac_state_data_frame
+# Function creates a set AcMode Data array from the template and inserts the mode PiZone wants to switch to
+def create_internal_ac_state_data_frame(self):
+    data = C_DaikinDataInternalMode
+    data[7] = self._DaikinClimateSettings_Object.InternalAcMode.value
+    return data
+
+
+# create_local_setting_data_frame
+# Function creates a set LocalSettings Data array from the template and inserts the Sensor PiZone wants to switch to
+def create_local_setting_data_frame(self):
+    data = C_DaikinDataControlInfoTemp
+    data[8] = self._DaikinClimateSettings_Object.ServiceModeSensor.value
+    return data
+
+
+# create_sensor_set_data_frame
 # Function creates a set Sensor Data array from the template and inserts the Sensor PiZone wants to switch to
-def CreateSensorSetDataFrame(self):
-    #reset UnitSettingsUpdated flag
-    self._DaikinClimateSettings_Object.UnitSettingsUpdated = False
+def create_sensor_set_data_frame(self):
+    # Reset UpdateRequestMask flag
+    self._DaikinClimateSettings_Object.UpdateRequestMask = \
+        UpdateRequest.reset_flag(self._DaikinClimateSettings_Object.UpdateRequestMask, UpdateRequest.TEMP_SENSOR)
     
-    Data = C_DaikinDataSensorSelect
-    Data[7] = ResolveSensorNameToIndex(self, self._DaikinClimateInfo_Object.TempSensorName[self._DaikinClimateSettings_Object.SelectedSensor])
-    return Data
-    
-#CreateRequestFrame
-#  Function creates the request frame based on given parameters
-def CreateRequestFrame (self,  RequestType, PCD):
-    #reset UnitSettingsUpdated flag
-    self._DaikinClimateSettings_Object.UnitSettingsUpdated = False
+    data = C_DaikinDataSensorSelect
+    data[7] = resolve_sensor_name_to_index(self,
+                                           self._DaikinClimateInfo_Object.TempSensorName[
+                                               self._DaikinClimateSettings_Object.SelectedSensor])
+    return data
 
-    Header = C_DaikinHeader
-    Header[3] = RequestType
-    #Only populate password if set. Otherwise default (0xFF, 0xFF) is ok.
-    if(self._Pwd != 0000):
-        Header[5] = CalcPasswordHiByte(self._Pwd)
-        Header[6] = CalcPasswordLowByte(self._Pwd)
-        
-    #0xA0 - Get all info from unit
-    if(PCD == C_PCD_BasicInfo):
-        Data = CreateDataRequestDataFrame(C_PCD_BasicInfo)
-    #0xA1 - Get unit type and limits
-    elif(PCD == C_PCD_InitialInfo):
-        Data = CreateDataRequestDataFrame(C_PCD_InitialInfo)
-    #0xB0 -  Get service info data
-    elif(PCD == C_PCD_ControlInfo):
-        Data = CreateAcStateDataFrame(self)
-    #0xB2 -  Set InternalAcMode
-    elif(PCD == C_PCD_InternalAcMode):
-        Data = CreateInternalAcModeDataFrame(self)
-    #0xB3 - Set ref sensor
-    elif(PCD == C_PCD_SelectSensor):
-        Data = CreateSensorSetDataFrame(self)
-    #0xC0 - Request service mode
-    elif(PCD == C_PCD_GetLocalSetting):
-        Data = CreateLocalSettingDataFrame(self)
-    #0xD0 - Request zone names
-    elif(PCD == C_PCD_GetZoneNames):
-        Data = CreateDataRequestDataFrame(C_PCD_GetZoneNames)
-    #0xD2 - Get sensor names
-    elif(PCD == C_PCD_GetSensorNames):
-        Data = CreateDataRequestDataFrame(C_PCD_GetSensorNames)
+
+# create_request_frame
+# Function creates the request frame based on given parameters
+def create_request_frame(self, request_type, pcd):
+    header = C_DaikinHeader
+    header[3] = request_type
+
+    # Only populate password if set. Otherwise default (0xFF, 0xFF) is ok.
+    if self._Pwd != 0000:
+        header[5] = calc_password_hi_byte(self._Pwd)
+        header[6] = calc_password_low_byte(self._Pwd)
+
+    data = ''
+
+    # 0xA0 - Get all info from unit
+    if pcd == C_PCD_BasicInfo:
+        data = create_data_request_frame(C_PCD_BasicInfo)
+    # 0xA1 - Get unit type and limits
+    elif pcd == C_PCD_InitialInfo:
+        data = create_data_request_frame(C_PCD_InitialInfo)
+    # 0xB0 -  Get service info data
+    elif pcd == C_PCD_ControlInfo:
+        data = create_ac_state_data_frame(self)
+    # 0xB2 -  Set InternalAcMode
+    elif pcd == C_PCD_InternalAcMode:
+        data = create_internal_ac_state_data_frame(self)
+    # 0xB3 - Set ref sensor
+    elif pcd == C_PCD_SelectSensor:
+        data = create_sensor_set_data_frame(self)
+    # 0xC0 - Request service mode
+    elif pcd == C_PCD_GetLocalSetting:
+        data = create_local_setting_data_frame(self)
+    # 0xD0 - Request zone names
+    elif pcd == C_PCD_GetZoneNames:
+        data = create_data_request_frame(C_PCD_GetZoneNames)
+    # 0xD2 - Get sensor names
+    elif pcd == C_PCD_GetSensorNames:
+        data = create_data_request_frame(C_PCD_GetSensorNames)
     else:
         pass
         # if(self._DebugModeLevel >= 1):
-            # print('Not supported')
-            
-    # if(self._DebugModeLevel >= 4):
-        # for e in Data : print ("%5x"%e," / " ,e, " / ", chr(int(e)) )
-            
-    Checksm = CalculateDaikinChecksum(Header, Data)
+        #   print('Not supported')
 
-    Frame = AssembleTransmissionFrame(Header, Data, Checksm)
-    
-    return Frame.decode('UTF-8')
+    # if(self._DebugModeLevel >= 4):
+    # for e in data : print ("%5x"%e," / " ,e, " / ", chr(int(e)) )
+
+    checksum = calculate_daikin_checksum(header, data)
+
+    frame = assemble_transmission_frame(header, data, checksum)
+
+    return frame.decode('UTF-8')

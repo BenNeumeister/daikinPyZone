@@ -1,376 +1,527 @@
-from enum import IntEnum, unique
+from enum import IntEnum, IntFlag, unique, auto
+
 
 @unique
 class InternalAcMode(IntEnum):
-        NORMAL = 0
-        INSPECTION = 1
-        TEST = 2
-        LOCAL_SETTING = 3
-        SERVICE = 4
-        SERVICE2 = 5
-        INITIALIZING =6 
-        OTHER_ACING = 7
+    NORMAL = 0
+    INSPECTION = 1
+    TEST = 2
+    LOCAL_SETTING = 3
+    SERVICE = 4
+    SERVICE2 = 5
+    INITIALIZING = 6
+    OTHER_ACING = 7
 
-@unique        
+
+@unique
 class AcPowerState(IntEnum):
-        OFF = 0
-        ON = 1
+    OFF = 0
+    ON = 1
 
-@unique    
+
+@unique
 class FanMode(IntEnum):
-        FAN = 0
-        AUTO = 1
-        MULTI_ZONING = 2
-        OFF = 3
- 
-@unique 
+    FAN = 0
+    AUTO = 1
+    MULTI_ZONING = 2
+    OFF = 3
+
+
+@unique
 class FanSpeed(IntEnum):
-        LOW = 0         #( FanMode = FAN)
-        MED = 1         #( FanMode = FAN)
-        HIGH =2         #( FanMode = FAN)
-        AUTO_LOW = 3    #( FanMode = AUTO)
-        AUTO_MED = 4    #( FanMode = AUTO)
-        AUTO_HIGH =5    #( FanMode = AUTO)
-        AUTO = 6        #( FanMode = MULTI_ZONING)
-        NA = 7          #( N/A. Ac Off, Dry)
-        
+    LOW = 0         # ( FanMode = FAN)
+    MED = 1         # ( FanMode = FAN)
+    HIGH = 2        # ( FanMode = FAN)
+    AUTO_LOW = 3    # ( FanMode = AUTO)
+    AUTO_MED = 4    # ( FanMode = AUTO)
+    AUTO_HIGH = 5   # ( FanMode = AUTO)
+    AUTO = 6        # ( FanMode = MULTI_ZONING)
+    NA = 7          # ( N/A. Ac Off, Dry)
+
+
+@unique
+class UpdateRequest(IntFlag):
+    POWER_STATE = auto()     # Power State update (Off)
+    AC_STATE = auto()        # AC State update (Heat/Cool/Fan)
+    TARGET_TEMP = auto()     # Temperature update
+    TEMP_SENSOR = auto()     # Sensor update
+    FAN_STATE = auto()       # Fan speed/mode update
+    ZONE = auto()            # Zone update
+
+    @classmethod
+    def reset_flag(cls, flags, flag_to_remove):
+        if isinstance(flags, UpdateRequest):
+            if flags | flag_to_remove:
+                flags &= ~flag_to_remove
+        return flags
+
+    @classmethod
+    def set_flag(cls, flags, flag_to_set):
+        if flags is None or flags == 0:
+            flags = flag_to_set
+        elif isinstance(flags, UpdateRequest):
+            if flags | flag_to_set:
+                flags |= flag_to_set
+        return flags
+
+
 FAN_MODES = ['Low', 'Med', 'High', 'Auto - Low', 'Auto - Med', 'Auto - High', 'Auto', 'N/A']
-FAN_MODE_MAP = {FAN_MODES[0]:FanSpeed.LOW, FAN_MODES[1]:FanSpeed.MED, FAN_MODES[2]:FanSpeed.HIGH, FAN_MODES[3]:FanSpeed.AUTO_LOW, FAN_MODES[4]:FanSpeed.AUTO_MED, FAN_MODES[5]:FanSpeed.AUTO_HIGH, FAN_MODES[6]:FanSpeed.AUTO, FAN_MODES[7]:FanSpeed.NA}
- 
-@unique 
+FAN_MODE_MAP = {
+    FAN_MODES[0]: FanSpeed.LOW,
+    FAN_MODES[1]: FanSpeed.MED,
+    FAN_MODES[2]: FanSpeed.HIGH,
+    FAN_MODES[3]: FanSpeed.AUTO_LOW,
+    FAN_MODES[4]: FanSpeed.AUTO_MED,
+    FAN_MODES[5]: FanSpeed.AUTO_HIGH,
+    FAN_MODES[6]: FanSpeed.AUTO,
+    FAN_MODES[7]: FanSpeed.NA}
+
+
+@unique
 class AcStateMode(IntEnum):
-        MODE_FAN = 0
-        MODE_DRY = 1
-        MODE_AUTO = 2
-        MODE_COOL = 3
-        MODE_HEAT = 4
-        MODE_OFF = 5
+    MODE_FAN = 0
+    MODE_DRY = 1
+    MODE_AUTO = 2
+    MODE_COOL = 3
+    MODE_HEAT = 4
+    MODE_OFF = 5
+
 
 OPERATION_MODES = ['fan_only', 'dry', 'auto', 'cool', 'heat', 'off']
-OPERATION_MODES_MAP = {OPERATION_MODES[0]:AcStateMode.MODE_FAN , OPERATION_MODES[1]:AcStateMode.MODE_DRY , OPERATION_MODES[2]:AcStateMode.MODE_AUTO , OPERATION_MODES[3]:AcStateMode.MODE_COOL , OPERATION_MODES[4]:AcStateMode.MODE_HEAT, OPERATION_MODES[5]:AcStateMode.MODE_OFF}
-        
-@unique        
-class SensorSelect(IntEnum):
-        CURRENTSETTING = 0
-        INTERNAL = 1
-        REFRIGERANT = 2
-        
-@unique        
-class ZoneState(IntEnum):
-        INACTIVE = 0
-        ACTIVE = 1
+OPERATION_MODES_MAP = {
+    OPERATION_MODES[0]: AcStateMode.MODE_FAN,
+    OPERATION_MODES[1]: AcStateMode.MODE_DRY,
+    OPERATION_MODES[2]: AcStateMode.MODE_AUTO,
+    OPERATION_MODES[3]: AcStateMode.MODE_COOL,
+    OPERATION_MODES[4]: AcStateMode.MODE_HEAT,
+    OPERATION_MODES[5]: AcStateMode.MODE_OFF}
 
-@unique        
+
+@unique
+class SensorSelect(IntEnum):
+    CURRENT_SETTING = 0
+    INTERNAL = 1
+    REFRIGERANT = 2
+
+
+@unique
+class ZoneState(IntEnum):
+    INACTIVE = 0
+    ACTIVE = 1
+
+
+@unique
 class SensorIndex(IntEnum):
-        Internal = 0
-        Sensor1 = 1
-        Sensor2 = 2
-        Outdoor = 3         # Not part of incoming info, but used for temp information
-        Refrigerant = 4     # Not part of incoming info, but used for temp information
+    Internal = 0
+    Sensor1 = 1
+    Sensor2 = 2
+    Outdoor = 3         # Not part of incoming info, but used for temp information
+    Refrigerant = 4     # Not part of incoming info, but used for temp information
+
 
 class FanInformation(object):
-    __slots__ = ['FanMode','FanSpeed']
+    __slots__ = ['FanMode', 'FanSpeed']
     
-    def __init__(self, FanMode = FanMode.AUTO, FanSpeed = FanSpeed.AUTO):
-        self.FanMode = FanMode
-        self.FanSpeed = FanSpeed
+    def __init__(self,
+                 fan_mode=FanMode.AUTO,
+                 fan_speed=FanSpeed.AUTO):
+        self.FanMode = fan_mode
+        self.FanSpeed = fan_speed
+
 
 class DaikinSensorNames(object):
     __slots__ = ['data']
     
-    def __init__(self, sensor1name = 'Sensor1', sensor2name = 'Sensor2'):
-        self.data = ['Internal Sensor', sensor1name, sensor2name, 'Outdoor Sensor', 'Refrigerant Sensor']
+    def __init__(self, sensor_1_name='Sensor1', sensor_2_name='Sensor2'):
+        self.data = ['Internal Sensor', sensor_1_name, sensor_2_name, 'Outdoor Sensor', 'Refrigerant Sensor']
                         
     def __setitem__(self, idx, value):
         self.data[idx] = value
         
-    def __getitem__(self,item):
+    def __getitem__(self, item):
         return self.data[item]
         
     @property
-    def Internal(self):
+    def internal(self):
         return self.data[SensorIndex.Internal]
         
     @property
-    def Sensor1(self):
+    def sensor1(self):
         return self.data[SensorIndex.Sensor1]
         
     @property
-    def Sensor2(self):
+    def sensor2(self):
         return self.data[SensorIndex.Sensor2]
         
     @property
-    def Outdoor(self):
+    def outdoor(self):
         return self.data[SensorIndex.Outdoor]
         
     @property
-    def Refrigerant(self):
+    def refrigerant(self):
         return self.data[SensorIndex.Refrigerant]
-            
+
+
 class DaikinTempSensorValue(object):
     __slots__ = ['data']
     
-    def __init__(self, internalSensorValue = 255, sensor1value = 255, sensor2value = 255, outdoorSensorValue = 255, coolantSensorValue = 255):
-        self.data = [internalSensorValue, sensor1value, sensor2value, outdoorSensorValue, coolantSensorValue]
+    def __init__(self,
+                 internal_sensor=255,
+                 sensor1=255,
+                 sensor2=255,
+                 outdoor_sensor=255,
+                 coolant_sensor=255):
+        self.data = [internal_sensor,
+                     sensor1,
+                     sensor2,
+                     outdoor_sensor,
+                     coolant_sensor]
         
     def __setitem__(self, idx, value):
         self.data[idx] = value
         
-    def __getitem__(self,item):
+    def __getitem__(self, item):
         return self.data[item]
         
     @property
-    def Internal(self):
+    def internal(self):
         return self.data[SensorIndex.Internal]
 
     @property
-    def Sensor1(self):
+    def sensor1(self):
         return self.data[SensorIndex.Sensor1]
         
     @property
-    def Sensor2(self):
+    def sensor2(self):
         return self.data[SensorIndex.Sensor2]
                 
     @property
-    def Outdoor(self):
+    def outdoor(self):
         return self.data[SensorIndex.Outdoor]
 
     @property
-    def Refrigerant(self):
+    def refrigerant(self):
         return self.data[SensorIndex.Refrigerant] 
+
 
 class DaikinZoneNames(object):
     __slots__ = ['data']
     
-    def __init__(self, zone1 = 'Zone1', zone2 = 'Zone1', zone3 = 'Zone3', zone4 = 'Zone4', zone5 = 'Zone5', zone6 = 'Zone6', zone7 = 'Zone7', zone8 = 'Zone8'):
+    def __init__(self,
+                 zone1='Zone1',
+                 zone2='Zone2',
+                 zone3='Zone3',
+                 zone4='Zone4',
+                 zone5='Zone5',
+                 zone6='Zone6',
+                 zone7='Zone7',
+                 zone8='Zone8'):
         self.data = [zone1, zone2, zone3, zone4, zone5, zone6, zone7, zone8]
         
     def __setitem__(self, idx, value):
         self.data[idx] = value
 
-    def __getitem__(self,item):
+    def __getitem__(self, item):
         return self.data[item]
         
     @property
-    def Zone1(self):
+    def zone1(self):
         return self.data[0]
 
     @property
-    def Zone2(self):
+    def zone2(self):
         return self.data[1]
         
     @property
-    def Zone3(self):
+    def zone3(self):
         return self.data[2]
         
     @property
-    def Zone4(self):
+    def zone4(self):
         return self.data[3]
         
     @property
-    def Zone5(self):
+    def zone5(self):
         return self.data[4]
         
     @property
-    def Zone6(self):
+    def zone6(self):
         return self.data[5]
         
     @property
-    def Zone7(self):
+    def zone7(self):
         return self.data[6]
         
     @property
-    def Zone8(self):
-        return self.data[7]      
+    def zone8(self):
+        return self.data[7]
+
 
 class DaikinZoneState(object):
     __slots__ = ['data']
     
     def __init__(self):
-        self.data = [ZoneState.INACTIVE, ZoneState.INACTIVE, ZoneState.INACTIVE, ZoneState.INACTIVE, ZoneState.INACTIVE, ZoneState.INACTIVE, ZoneState.INACTIVE, ZoneState.INACTIVE]
+        self.data = [ZoneState.INACTIVE,
+                     ZoneState.INACTIVE,
+                     ZoneState.INACTIVE,
+                     ZoneState.INACTIVE,
+                     ZoneState.INACTIVE,
+                     ZoneState.INACTIVE,
+                     ZoneState.INACTIVE,
+                     ZoneState.INACTIVE]
         
     def __setitem__(self, idx, value):
         self.data[idx] = value
 
-    def __getitem__(self,item):
+    def __getitem__(self, item):
         return self.data[item]
         
     @property
-    def Zone1(self):
+    def zone1(self):
         return self.data[0]
 
     @property
-    def Zone2(self):
+    def zone2(self):
         return self.data[1]
         
     @property
-    def Zone3(self):
+    def zone3(self):
         return self.data[2]
         
     @property
-    def Zone4(self):
+    def zone4(self):
         return self.data[3]
         
     @property
-    def Zone5(self):
+    def zone5(self):
         return self.data[4]
         
     @property
-    def Zone6(self):
+    def zone6(self):
         return self.data[5]
         
     @property
-    def Zone7(self):
+    def zone7(self):
         return self.data[6]
         
     @property
-    def Zone8(self):
+    def zone8(self):
         return self.data[7]
+
 
 class DaikinClimateInformation(object):
 
-    __slots__ = ['IndoorUnitPartNumber','OutdoorUnitPartNumber','MaxCoolTemp','MinCoolTemp','MaxHeatTemp','MinHeatTemp','NumberOfZones','ZoneName','NumberOfSensors','TempSensorName','ErrorCodes','HistoryErrorCodes','ClearFilter']
+    __slots__ = ['IndoorUnitPartNumber',
+                 'OutdoorUnitPartNumber',
+                 'MaxCoolTemp',
+                 'MinCoolTemp',
+                 'MaxHeatTemp',
+                 'MinHeatTemp',
+                 'NumberOfZones',
+                 'ZoneName',
+                 'NumberOfSensors',
+                 'TempSensorName',
+                 'ErrorCodes',
+                 'HistoryErrorCodes',
+                 'ClearFilter']
 
-    def __init__(self, indoorUnit = 'Unknown', outdoorUnit = 'Unknown', maxCoolTemp = 23, minCoolTemp = 18, maxHeatTemp = 23, minHeatTemp = 18, numOfZones = 1, numOfSensors = 1, airFlowRatio =100,  isCommonZone = 1, errCodes = 0, hisErrCode = 0, cleanFilterFlag = 0):
+    def __init__(self,
+                 indoor_unit='Unknown',
+                 outdoor_unit='Unknown',
+                 max_cool_temp=23,
+                 min_cool_temp=18,
+                 max_heat_temp=23,
+                 min_heat_temp=18,
+                 num_of_zones=1,
+                 num_of_sensors=1,
+                 # air_flow_ratio=100,
+                 # is_common_zone=1,
+                 error_codes=0,
+                 history_error_codes=0,
+                 clean_filter_flag=0):
 
-        #Unit part numbers
-        self.IndoorUnitPartNumber = indoorUnit
-        self.OutdoorUnitPartNumber = outdoorUnit
+        # Unit part numbers
+        self.IndoorUnitPartNumber = indoor_unit
+        self.OutdoorUnitPartNumber = outdoor_unit
 
-        #Set range values
-        self.MaxCoolTemp = maxCoolTemp
-        self.MinCoolTemp = minCoolTemp
-        self.MaxHeatTemp = maxHeatTemp
-        self.MinHeatTemp = minHeatTemp
-        self.NumberOfZones = numOfZones
+        # Set range values
+        self.MaxCoolTemp = max_cool_temp
+        self.MinCoolTemp = min_cool_temp
+        self.MaxHeatTemp = max_heat_temp
+        self.MinHeatTemp = min_heat_temp
+        self.NumberOfZones = num_of_zones
 
-        #Zone names
+        # Zone names
         self.ZoneName = DaikinZoneNames()
 
-        #Optional temperature sensor names
-        self.NumberOfSensors = numOfSensors
+        # Optional temperature sensor names
+        self.NumberOfSensors = num_of_sensors
         self.TempSensorName = DaikinSensorNames()
                 
-        #Error code info
-        self.ErrorCodes = errCodes
-        self.HistoryErrorCodes = hisErrCode
+        # Error code info
+        self.ErrorCodes = error_codes
+        self.HistoryErrorCodes = history_error_codes
 
-        #Filter Clean Flag
-        self.ClearFilter = cleanFilterFlag
+        # Filter Clean Flag
+        self.ClearFilter = clean_filter_flag
+
 
 class DaikinClimateSettings(object):
 
-    __slots__ = ['UnitSettingsUpdated','PowerOnState','Zone','SelectedSensor','ServiceModeSensor','CoolSetTemp','HeatSetTemp','TempSensorValues','AcStateModeValue','InternalAcMode','CoolFanState','HeatFanState']
+    __slots__ = ['UpdateRequestMask',
+                 'PowerOnState',
+                 'Zone',
+                 'SelectedSensor',
+                 'ServiceModeSensor',
+                 'CoolSetTemp',
+                 'HeatSetTemp',
+                 'TempSensorValues',
+                 'AcStateModeValue',
+                 'InternalAcMode',
+                 'CoolFanState',
+                 'HeatFanState']
 
-    def __init__(self, powerOnState = AcPowerState.OFF, acMode = 0, internalAcMode = 0, selectedSensor = 1, serviceModeSensor = 1, coolSetTemp = 21, heatSetTemp = 21, powerState = 0):
-        #UpdateFlag
-        self.UnitSettingsUpdated = False
+    def __init__(self,
+                 power_on_state=AcPowerState.OFF,
+                 ac_mode=0,
+                 internal_ac_mode=0,
+                 selected_sensor=1,
+                 service_mode_sensor=1,
+                 cool_set_temp=21,
+                 heat_set_temp=21,
+                 update_mask=0):
+
+        # UpdateFlag
+        self.UpdateRequestMask = update_mask
+
+        # PowerState
+        self.PowerOnState = power_on_state
         
-        #PowerState
-        self.PowerOnState = powerOnState
-        
-        #Zone Config (bit encoded)
+        # Zone Config (bit encoded)
         self.Zone = DaikinZoneState()
         
-        #Selected Temp sensor
-        self.SelectedSensor = selectedSensor
-        self.ServiceModeSensor = serviceModeSensor
+        # Selected Temp sensor
+        self.SelectedSensor = selected_sensor
+        self.ServiceModeSensor = service_mode_sensor
 
-        #SetTemp values
-        self.CoolSetTemp = coolSetTemp
-        self.HeatSetTemp = heatSetTemp
+        # SetTemp values
+        self.CoolSetTemp = cool_set_temp
+        self.HeatSetTemp = heat_set_temp
 
-        #Temp sensor values
+        # Temp sensor values
         self.TempSensorValues = DaikinTempSensorValue()       
 
-        #AC mode
-        self.AcStateModeValue = acMode
+        # AC mode
+        self.AcStateModeValue = ac_mode
 
-        #Internal Ac Mode
-        self.InternalAcMode = internalAcMode
+        # Internal Ac Mode
+        self.InternalAcMode = internal_ac_mode
         
-        #FanStates - Cool
+        # FanStates - Cool
         self.CoolFanState = FanInformation()
         
-        #FanStates - Heat
+        # FanStates - Heat
         self.HeatFanState = FanInformation()
-        
-#ConvertModeFlagToAcState
-#Function converts ModeFlag to actual mode 
-def ConvertModeFlagToAcState( int):
-    if(int == 0): return AcStateMode.MODE_FAN
-    elif(int == 1): return AcStateMode.MODE_HEAT
-    elif(int == 2): return AcStateMode.MODE_COOL
-    elif(int == 3): return AcStateMode.MODE_AUTO
-    elif(int == 4): return AcStateMode.MODE_AUTO
-    elif(int == 5): return AcStateMode.MODE_AUTO
-    elif(int == 6): return AcStateMode.MODE_AUTO
-    elif(int == 7): return AcStateMode.MODE_DRY
-    else: return AcStateMode.MODE_NONE    
-    
-#DetermineFanInformation
-#Function determines fanspeed type from 'value' and FanMode
-def DetermineFanInformation(FanModeValue, FanSpeedValue):
-    #Depending on FanMode, FanSpeed has different ENUM value (raw value is the same)
-    
-    l_FanMode = FanMode(FanModeValue)
-    
-    #Need to check if speed 1-> 5 are in steps or only 1/3/5 are valid.
-    if(l_FanMode == FanMode.FAN):
-        if(FanSpeedValue == 1):     l_FanSpeed = FanSpeed.LOW
-        elif(FanSpeedValue == 3):   l_FanSpeed = FanSpeed.MED
-        else:                       l_FanSpeed = FanSpeed.HIGH
-        #FanSpeedValue == 5
 
-    elif(l_FanMode == FanMode.AUTO):
-        if(FanSpeedValue == 1):     l_FanSpeed = FanSpeed.AUTO_LOW
-        elif(FanSpeedValue == 3):   l_FanSpeed = FanSpeed.AUTO_MED
-        else:                       l_FanSpeed = FanSpeed.AUTO_HIGH
-        #FanSpeedValue == 5
-    
+        
+# convert_mode_flags_to_ac_state
+# Function converts ModeFlag to actual mode 
+def convert_mode_flags_to_ac_state(mode_flag):
+    if mode_flag == 0:
+        return AcStateMode.MODE_FAN
+    elif mode_flag == 1:
+        return AcStateMode.MODE_HEAT
+    elif mode_flag == 2:
+        return AcStateMode.MODE_COOL
+    elif mode_flag == 3:
+        return AcStateMode.MODE_AUTO
+    elif mode_flag == 4:
+        return AcStateMode.MODE_AUTO
+    elif mode_flag == 5:
+        return AcStateMode.MODE_AUTO
+    elif mode_flag == 6:
+        return AcStateMode.MODE_AUTO
+    elif mode_flag == 7:
+        return AcStateMode.MODE_DRY
     else:
-        #(l_FanMode == FanMode.MULTI_ZONING/OFF):
-        l_FanSpeed = FanSpeed.AUTO
-        
-    return FanInformation(l_FanMode, l_FanSpeed)
-
-#ResolveFanSpeedForDataFrame
-#Function resolves FanSpeed enum into fan speed value 
-def ResolveFanSpeedForDataFrame(FanSpeedEnum):
-    if((FanSpeedEnum == FanSpeed.LOW) or (FanSpeedEnum == FanSpeed.AUTO_LOW) or (FanSpeedEnum == FanSpeed.AUTO)):
-        return 1
-    elif((FanSpeedEnum == FanSpeed.MED) or (FanSpeedEnum == FanSpeed.AUTO_MED)):                                                        
-        return 3
-    else: return 5    
+        return AcStateMode.MODE_NONE
     
-#ResolveSensorNameToIndex
-#Function resolves SensorName to sensor index
-def ResolveSensorNameToIndex(self, SensorName):
-    i= 0
-    while i<self._DaikinClimateInfo_Object.NumberOfSensors:
-        if(self._DaikinClimateInfo_Object.TempSensorName[i] == SensorName): return i
-        i +=1
-    return -1    
+    
+# determine_fan_information
+# Function determines fan_speed type from 'value' and fan_mode
+def determine_fan_information(fan_mode_value, fan_speed_value):
+    # Depending on FanMode, FanSpeed has different ENUM value (raw value is the same)
+    
+    fan_mode = FanMode(fan_mode_value)
+    fan_speed = FanSpeed.AUTO
+    
+    # Need to check if speed 1-> 5 are in steps or only 1/3/5 are valid.
+    if fan_mode == FanMode.FAN:
+        if fan_speed_value == 1:
+            fan_speed = FanSpeed.LOW
+        elif fan_speed_value == 3:
+            fan_speed = FanSpeed.MED
+        else:
+            fan_speed = FanSpeed.HIGH
+            # fan_speed_value == 5
 
-#UpdateZoneState
-#Function updates the zone mask states based on the bit encoded parameter value (1 == Active)
-def SyncZoneState(self, ZoneBitValue):
-    #check each bit and set corresponding zone. Check for 'max' zones supported
-    #check if 'ignore 0' is supported
-    for x in range (0, self._DaikinClimateInfo_Object.NumberOfZones):
-        if( ZoneBitValue & (1<<x)):
+    elif fan_mode == FanMode.AUTO:
+        if fan_speed_value == 1:
+            fan_speed = FanSpeed.AUTO_LOW
+        elif fan_speed_value == 3:
+            fan_speed = FanSpeed.AUTO_MED
+        else:
+            fan_speed = FanSpeed.AUTO_HIGH
+            # fan_speed_value == 5
+    else:
+        pass
+        # (fan_mode == FanMode.MULTI_ZONING/OFF):
+
+    return FanInformation(fan_mode, fan_speed)
+
+
+# resolve_fan_speed_for_data_frame
+# Function resolves FanSpeed enum into fan speed value 
+def resolve_fan_speed_for_data_frame(fan_speed):
+    if(fan_speed == FanSpeed.LOW) or (fan_speed == FanSpeed.AUTO_LOW) or (fan_speed == FanSpeed.AUTO):
+        return 1
+    elif(fan_speed == FanSpeed.MED) or (fan_speed == FanSpeed.AUTO_MED):
+        return 3
+    else:
+        return 5
+    
+    
+# resolve_sensor_name_to_index
+# Function resolves SensorName to sensor index
+def resolve_sensor_name_to_index(self, sensor_name):
+    i = 0
+    while i < self._DaikinClimateInfo_Object.NumberOfSensors:
+        if self._DaikinClimateInfo_Object.TempSensorName[i] == sensor_name:
+            return i
+        i += 1
+    return 255
+
+
+# sync_zone_state
+# Function updates the zone mask states based on the bit encoded parameter value (1 == Active)
+def sync_zone_state(self, zone_bit_value):
+    # Check each bit and set corresponding zone. Check for 'max' zones supported
+    # Check if 'ignore 0' is supported
+    for x in range(0, self._DaikinClimateInfo_Object.NumberOfZones):
+        if zone_bit_value & (1 << x):
             self._DaikinClimateSettings_Object.Zone[x] = ZoneState.ACTIVE
         else: 
             self._DaikinClimateSettings_Object.Zone[x] = ZoneState.INACTIVE
-            
-#GetZoneBitMaskFromZoneState
-#Function generates a bit encoded parameter value based on which zones are active
-def GetZoneBitMaskFromZoneState(self):
-    #check each bit and get corresponding zone. Check for 'max' zones supported
-    ZoneMaskSum = 0
-    
-    for x in range (0, self._DaikinClimateInfo_Object.NumberOfZones):
-        if( self._DaikinClimateSettings_Object.Zone[x] == ZoneState.ACTIVE):
-            ZoneMaskSum += (1 << x)
 
-    return ZoneMaskSum        
+
+# get_zone_bit_mask_from_zone_state
+# Function generates a bit encoded parameter value based on which zones are active
+def get_zone_bit_mask_from_zone_state(self):
+    # Check each bit and get corresponding zone. Check for 'max' zones supported
+    zone_mask_sum = 0
+    
+    for x in range(0, self._DaikinClimateInfo_Object.NumberOfZones):
+        if self._DaikinClimateSettings_Object.Zone[x] == ZoneState.ACTIVE:
+            zone_mask_sum += (1 << x)
+
+    return zone_mask_sum
